@@ -384,6 +384,8 @@ func generateOpenAIAnswer(userQuestion string, similarMessages []map[string]inte
 	prompt := "Using the following chat snippets, answer the question.\n\n" +
 		strings.Join(snippets, "\n") + "\n\nQuestion: " + userQuestion + "\nAnswer:"
 
+	log.Printf("Final prompt sent to OpenAI:\n%s", prompt)
+
 	log.Printf("Constructed prompt for OpenAI (length: %d characters)", len(prompt))
 
 	// Prepare the request to OpenAI
