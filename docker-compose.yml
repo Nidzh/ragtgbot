@@ -1,17 +1,26 @@
 version: "3.9"
+
 services:
   qdrant:
     image: qdrant/qdrant:latest
+    # Порты убрали, это правильно для внутренней сети
     volumes:
       - qdrant_data:/qdrant/storage
+    restart: always
+    networks:           # <--- Добавляем сеть
+      - app_network
 
   embedding_service:
     build:
       context: ./embedding_service
       dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
     restart: always
     depends_on:
       - qdrant
+    networks:           # <--- Добавляем сеть
+      - app_network
 
   tgbot:
     build:
@@ -24,9 +33,17 @@ services:
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Обратите внимание: внутри сети докер имена сервисов работают как хосты
       - EMBEDDING_SERVICE_ADDRESS=http://embedding_service:8000/embeddings
       - QDRANT_SERVICE_ADDRESS=http://qdrant:6333
       - TG_GROUP_LIST=${TG_GROUP_LIST}
+    networks:           # <--- Добавляем сеть
+      - app_network
 
 volumes:
   qdrant_data:
+
+# Объявляем саму сеть в конце файла
+networks:
+  app_network:
+    driver: bridge
